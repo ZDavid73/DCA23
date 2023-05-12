@@ -5,6 +5,7 @@ import { appState, addObserver } from "../../store";
 const formData: Omit<Product, "id"> = {
   name: "",
   price: 0,
+  date: "",
 };
 
 export default class Dashboard extends HTMLElement {
