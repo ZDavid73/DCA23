@@ -56,21 +56,34 @@ export default class Dashboard extends HTMLElement {
     save.innerText = "Guardar";
     save.addEventListener("click", this.submitForm);
     this.shadowRoot?.appendChild(save);
+    const productsList = this.ownerDocument.createElement("section");
+    this.shadowRoot?.appendChild(productsList);
 
-    const products = await Firebase.getProducts();
-    products.forEach((p: Product) => {
-      const container = this.ownerDocument.createElement("section");
-      const name = this.ownerDocument.createElement("h3");
-      name.innerText = p.name;
-      container.appendChild(name);
+    Firebase.getProductsListener((products) => {
+      // productsList.innerHTML = "";
+      const oldOnesIds: String[] = [];
+      productsList.childNodes.forEach((i) => {
+        if (i instanceof HTMLElement) oldOnesIds.push(i.dataset.pid || "");
+      });
+      const newOnes = products.filter((prod) => !oldOnesIds.includes(prod.id));
+      console.log(newOnes);
 
-      const price = this.ownerDocument.createElement("h3");
-      price.innerText = String(p.price);
-      container.appendChild(price);
+      newOnes.forEach((p: Product) => {
+        const container = this.ownerDocument.createElement("section");
+        container.setAttribute("data-pid", p.id);
+        const name = this.ownerDocument.createElement("h3");
+        name.innerText = p.name;
+        container.appendChild(name);
 
-      this.shadowRoot?.appendChild(container);
+        const price = this.ownerDocument.createElement("h3");
+        price.innerText = String(p.price);
+        container.appendChild(price);
+
+        productsList.prepend(container);
+      });
     });
   }
 }
 
 customElements.define("app-dashboard", Dashboard);
+

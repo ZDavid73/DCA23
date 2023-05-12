@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { getFirestore, collection, addDoc, getDocs } from "firebase/firestore";
+import { getFirestore, collection, doc, onSnapshot, addDoc, getDocs, query, orderBy } from "firebase/firestore";
 import { Product } from "../types/products";
 import {
   createUserWithEmailAndPassword,
@@ -9,6 +9,7 @@ import {
   browserSessionPersistence,
   onAuthStateChanged
 } from "firebase/auth";
+
 const firebaseConfig = {
   apiKey: "AIzaSyCwASHmt8O1HvxtZuTc5d_NMaoHEIYPTlo",
   authDomain: "prueba2-eaacd.firebaseapp.com",
@@ -17,8 +18,12 @@ const firebaseConfig = {
   messagingSenderId: "472325824028",
   appId: "1:472325824028:web:ef0cd539d7ef2dcacac9d9"
 };
+
 const app = initializeApp(firebaseConfig);
-export const auth = getAuth(app);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+
 
 const registerUser = async ({
   email,
@@ -63,20 +68,22 @@ const loginUser = async ({
 };
 
 /////////////////////// DB
-const db = getFirestore(app);
+
 
 const addProduct = async (product: Omit<Product, "id">) => {
   try {
     const where = collection(db, "products");
-    await addDoc(where, product);
+    await addDoc(where, { ...product, createdAt: new Date() }); // add createdAt field
     console.log("se añadió con éxito");
   } catch (error) {
     console.error(error);
   }
 };
 
+
 const getProducts = async () => {
-  const querySnapshot = await getDocs(collection(db, "products"));
+  const q = query(collection(db, "products"), orderBy("createdAt")); // order by createdAt
+  const querySnapshot = await getDocs(q);
   const transformed: Array<Product> = [];
 
   querySnapshot.forEach((doc) => {
@@ -85,13 +92,6 @@ const getProducts = async () => {
   });
 
   return transformed;
-};
-
-export default {
-  addProduct,
-  getProducts,
-  registerUser,
-  loginUser,
 };
 
 //Register new user
@@ -131,3 +131,24 @@ onAuthStateChanged(auth, (user:any) => {
 	
 	}
 });
+
+const getProductsListener = (cb: (docs: Product[]) => void) => {
+  const q = query(collection(db, "products"), orderBy("createdAt")); // order by createdAt
+  onSnapshot(q, (collection) => {
+    const docs: Product[] = collection.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    })) as Product[];
+    cb(docs);
+  });
+};
+
+export {auth}
+export {db}
+export default {
+  addProduct,
+  getProducts,
+  getProductsListener,
+  registerUser,
+  loginUser,
+};
