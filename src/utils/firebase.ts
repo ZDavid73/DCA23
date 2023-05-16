@@ -10,6 +10,14 @@ import {
   onAuthStateChanged
 } from "firebase/auth";
 
+const firebaseConfig = {
+  apiKey: "AIzaSyCwASHmt8O1HvxtZuTc5d_NMaoHEIYPTlo",
+  authDomain: "prueba2-eaacd.firebaseapp.com",
+  projectId: "prueba2-eaacd",
+  storageBucket: "prueba2-eaacd.appspot.com",
+  messagingSenderId: "472325824028",
+  appId: "1:472325824028:web:ef0cd539d7ef2dcacac9d9"
+};
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
